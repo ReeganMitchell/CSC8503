@@ -1,0 +1,8 @@
+﻿  CollisionDetection.cpp
+H:\Stg4\CSC8503\CSC8503\CSC8503Common\CollisionDetection.h(44,1): warning C4293:  '<<': shift count negative or too big, undefined behavior
+  PhysicsSystem.cpp
+H:\Stg4\CSC8503\CSC8503\CSC8503Common\CollisionDetection.h(45,1): warning C4293:  '<<': shift count negative or too big, undefined behavior
+H:\Stg4\CSC8503\CSC8503\CSC8503Common\CollisionDetection.h(44,1): warning C4293:  '<<': shift count negative or too big, undefined behavior
+  Generating Code...
+H:\Stg4\CSC8503\CSC8503\CSC8503Common\CollisionDetection.h(45,1): warning C4293:  '<<': shift count negative or too big, undefined behavior
+  CSC8503Common.vcxproj -> H:\Stg4\CSC8503\Win32\Debug\CSC8503Common.lib
