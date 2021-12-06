@@ -260,7 +260,7 @@ A single function to add a large immoveable cube to the bottom of our world
 
 */
 GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
-	GameObject* floor = new GameObject();
+	GameObject* floor = new GameObject("Floor");
 
 	Vector3 floorSize	= Vector3(100, 2, 100);
 	AABBVolume* volume	= new AABBVolume(floorSize);
@@ -288,7 +288,7 @@ physics worlds. You'll probably need another function for the creation of OBB cu
 
 */
 GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass) {
-	GameObject* sphere = new GameObject();
+	GameObject* sphere = new GameObject("Sphere");
 
 	Vector3 sphereSize = Vector3(radius, radius, radius);
 	SphereVolume* volume = new SphereVolume(radius);
@@ -310,7 +310,7 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 }
 
 GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass) {
-	GameObject* capsule = new GameObject();
+	GameObject* capsule = new GameObject("Capsule");
 
 	CapsuleVolume* volume = new CapsuleVolume(halfHeight, radius);
 	capsule->SetBoundingVolume((CollisionVolume*)volume);
@@ -332,7 +332,7 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 }
 
 GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
-	GameObject* cube = new GameObject();
+	GameObject* cube = new GameObject("Cube");
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 
@@ -404,7 +404,7 @@ GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
 	float meshSize = 3.0f;
 	float inverseMass = 0.5f;
 
-	GameObject* character = new GameObject();
+	GameObject* character = new GameObject("Player");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.85f, 0.3f) * meshSize);
 
@@ -436,7 +436,7 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 	float meshSize		= 3.0f;
 	float inverseMass	= 0.5f;
 
-	GameObject* character = new GameObject();
+	GameObject* character = new GameObject("Enemy");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
@@ -457,7 +457,7 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 }
 
 GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
-	GameObject* apple = new GameObject();
+	GameObject* apple = new GameObject("Bonus");
 
 	SphereVolume* volume = new SphereVolume(0.25f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
@@ -553,5 +553,24 @@ added linear motion into our physics system. After the second tutorial, objects 
 line - after the third, they'll be able to twist under torque aswell.
 */
 void TutorialGame::MoveSelectedObject() {
+	renderer->DrawString("Click Force: " + std::to_string(forceMagnitude), Vector2(10, 20));
 
+	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
+
+	if (!selectionObject) {
+		return;
+	}
+
+	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) {
+		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
+		RayCollision closestCollision;
+
+		if (world->Raycast(ray, closestCollision, true)) {
+			if (closestCollision.node == selectionObject) {
+				//selectionObject->GetPhysicsObject()->AddForce(ray.GetDirection() * forceMagnitude);
+
+				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt);
+			}
+		}
+	}
 }

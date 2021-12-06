@@ -1,1 +1,10 @@
-﻿
+﻿  glad.c
+  OGLComputeShader.cpp
+  OGLMesh.cpp
+  OGLRenderer.cpp
+H:\Stg4\CSC8503\Plugins\OpenGLRendering\OGLRenderer.cpp(301,51): warning C4267:  'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+  OGLShader.cpp
+  OGLTexture.cpp
+  Generating Code...
+H:\Stg4\CSC8503\Plugins\OpenGLRendering\OGLRenderer.cpp(323,52): warning C4267:  'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+  OpenGLRendering.vcxproj -> H:\Stg4\CSC8503\x64\Debug\OpenGLRendering.lib
