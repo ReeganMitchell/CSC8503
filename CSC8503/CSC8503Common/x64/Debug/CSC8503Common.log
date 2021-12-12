@@ -1,3 +1,0 @@
-﻿  PhysicsSystem.cpp
-H:\Stg4\CSC8503\CSC8503\CSC8503Common\PhysicsSystem.cpp(372,29): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
-  CSC8503Common.vcxproj -> H:\Stg4\CSC8503\x64\Debug\CSC8503Common.lib
