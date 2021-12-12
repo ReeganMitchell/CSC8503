@@ -5,3 +5,11 @@
 /x64/Debug
 /Win32/Debug
 /.vs
+/Plugins
+/Common/Debug
+/Common/x64
+/GameTech/x64
+/CSC8503/CSC8503Common/x64
+/CSC8503/GameTech/x64
+Plugins/OpenGLRendering/x64
+Plugins/Networking-ENet/x64
