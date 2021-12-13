@@ -1,5 +1,0 @@
-﻿  PhysicsSystem.cpp
-H:\Stg4\CSC8503\CSC8503\CSC8503Common\CollisionDetection.h(44,1): warning C4293:  '<<': shift count negative or too big, undefined behavior
-H:\Stg4\CSC8503\CSC8503\CSC8503Common\CollisionDetection.h(45,1): warning C4293:  '<<': shift count negative or too big, undefined behavior
-H:\Stg4\CSC8503\CSC8503\CSC8503Common\PhysicsSystem.cpp(310,29): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
-  CSC8503Common.vcxproj -> H:\Stg4\CSC8503\Win32\Debug\CSC8503Common.lib
