@@ -4,6 +4,7 @@
 #include "../../Plugins/OpenGLRendering/OGLShader.h"
 #include "../../Plugins/OpenGLRendering/OGLTexture.h"
 #include "../../Common/TextureLoader.h"
+#include "../CSC8503Common/PositionConstraint.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -101,6 +102,10 @@ void TutorialGame::UpdateGame(float dt) {
 		world->GetMainCamera()->SetYaw(angles.y);
 
 		//Debug::DrawAxisLines(lockedObject->GetTransform().GetMatrix(), 2.0f);
+	}
+
+	if (testStateObject) {
+		testStateObject->Update(dt);
 	}
 
 	world->UpdateWorld(dt);
@@ -228,7 +233,6 @@ void TutorialGame::DebugObjectMovement() {
 			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
 		}
 	}
-
 }
 
 void TutorialGame::InitCamera() {
@@ -244,14 +248,37 @@ void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
 
-	InitMixedGridWorld(5, 5, 3.5f, 3.5f);
-	InitGameExamples();
-	InitDefaultFloor();
+	//InitMixedGridWorld(5, 5, 3.5f, 3.5f);
+	//InitGameExamples();
+	BridgeConstraintTest();
+	//InitDefaultFloor();
+	testStateObject = AddStateObjectToWorld(Vector3(40, 10, 0));
 }
 
 void TutorialGame::BridgeConstraintTest() {
 
+	Vector3 cubeSize = Vector3(8, 8, 8);
 
+	float invCubeMass = 5; //how heavy the middle pieces are
+	int numLinks = 10;
+	float maxDistance = 30; // constraint distance
+	float cubeDistance = 20; // distance between links
+
+	Vector3 startPos = Vector3(00, 00, 00);
+
+	GameObject * start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
+	GameObject * end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 0);
+
+	GameObject * previous = start;
+
+	for (int i = 0; i < numLinks; ++i) {
+		GameObject * block = AddCubeToWorld(startPos + Vector3((i + 1) * cubeDistance, 0, 0), cubeSize, invCubeMass);
+		PositionConstraint * constraint = new PositionConstraint(previous, block, maxDistance);
+		world->AddConstraint(constraint);
+		previous = block;
+	}
+	PositionConstraint * constraint = new PositionConstraint(previous,end, maxDistance);
+	world->AddConstraint(constraint);
 }
 
 /*
@@ -288,7 +315,7 @@ physics worlds. You'll probably need another function for the creation of OBB cu
 
 */
 GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass) {
-	GameObject* sphere = new GameObject("Sphere");
+	GameObject* sphere = new GameObject();
 
 	Vector3 sphereSize = Vector3(radius, radius, radius);
 	SphereVolume* volume = new SphereVolume(radius);
@@ -310,7 +337,7 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 }
 
 GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass) {
-	GameObject* capsule = new GameObject("Capsule");
+	GameObject* capsule = new GameObject();
 
 	CapsuleVolume* volume = new CapsuleVolume(halfHeight, radius);
 	capsule->SetBoundingVolume((CollisionVolume*)volume);
@@ -332,7 +359,7 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 }
 
 GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
-	GameObject* cube = new GameObject("Cube");
+	GameObject* cube = new GameObject();
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 
@@ -404,7 +431,7 @@ GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
 	float meshSize = 3.0f;
 	float inverseMass = 0.5f;
 
-	GameObject* character = new GameObject("Player");
+	GameObject* character = new GameObject();
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.85f, 0.3f) * meshSize);
 
@@ -436,7 +463,7 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 	float meshSize		= 3.0f;
 	float inverseMass	= 0.5f;
 
-	GameObject* character = new GameObject("Enemy");
+	GameObject* character = new GameObject();
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
@@ -457,7 +484,28 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 }
 
 GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
-	GameObject* apple = new GameObject("Bonus");
+	GameObject* apple = new GameObject();
+
+	SphereVolume* volume = new SphereVolume(0.25f);
+	apple->SetBoundingVolume((CollisionVolume*)volume);
+	apple->GetTransform()
+		.SetScale(Vector3(0.25, 0.25, 0.25))
+		.SetPosition(position);
+
+	apple->SetRenderObject(new RenderObject(&apple->GetTransform(), bonusMesh, nullptr, basicShader));
+	apple->SetPhysicsObject(new PhysicsObject(&apple->GetTransform(), apple->GetBoundingVolume()));
+
+	apple->GetPhysicsObject()->SetInverseMass(1.0f);
+	apple->GetPhysicsObject()->InitSphereInertia();
+
+	world->AddGameObject(apple);
+
+	return apple;
+}
+
+StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3& position)
+{
+	StateGameObject* apple = new StateGameObject();
 
 	SphereVolume* volume = new SphereVolume(0.25f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
