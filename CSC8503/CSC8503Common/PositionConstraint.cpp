@@ -13,7 +13,7 @@ void PositionConstraint::UpdateConstraint(float dt)
 
 	float offset = distance - currentDistance;
 
-	if (abs(offset) > 0.0f) {
+	if (offset < 0.0f) {
 		Vector3 offsetDir = relativePos.Normalised();
 
 		PhysicsObject* physA = objectA->GetPhysicsObject();

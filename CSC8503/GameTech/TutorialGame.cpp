@@ -16,7 +16,7 @@ TutorialGame::TutorialGame()	{
 
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
-	inSelectionMode = false;
+	inSelectionMode = true;
 
 	Debug::SetRenderer(renderer);
 
@@ -48,8 +48,9 @@ void TutorialGame::InitialiseAssets() {
 	basicTex	= (OGLTexture*)TextureLoader::LoadAPITexture("checkerboard.png");
 	basicShader = new OGLShader("GameTechVert.glsl", "GameTechFrag.glsl");
 
-	InitCamera();
-	InitWorld();
+	InitCameraMenu();
+	//InitWorld();
+	InitMenu();
 }
 
 TutorialGame::~TutorialGame()	{
@@ -69,6 +70,7 @@ TutorialGame::~TutorialGame()	{
 }
 
 void TutorialGame::UpdateGame(float dt) {
+
 	if (!inSelectionMode) {
 		world->GetMainCamera()->UpdateCamera(dt);
 	}
@@ -76,15 +78,23 @@ void TutorialGame::UpdateGame(float dt) {
 	UpdateKeys();
 
 	if (useGravity) {
-		Debug::Print("(G)ravity on", Vector2(5, 95));
+		//Debug::Print("(G)ravity on", Vector2(5, 95));
 	}
 	else {
-		Debug::Print("(G)ravity off", Vector2(5, 95));
+		//Debug::Print("(G)ravity off", Vector2(5, 95));
+	}
+
+	if (menu) {
+		renderer->DrawString("Play Part A", Vector2(45, 50));
+		renderer->DrawString("Play Part B", Vector2(45, 65));
+		renderer->DrawString("Exit", Vector2(45, 80));
 	}
 
 	SelectObject();
 	MoveSelectedObject();
 	physics->Update(dt);
+
+
 
 	if (lockedObject != nullptr) {
 		Vector3 objPos = lockedObject->GetTransform().GetPosition();
@@ -113,6 +123,22 @@ void TutorialGame::UpdateGame(float dt) {
 
 	Debug::FlushRenderables(dt);
 	renderer->Render();
+
+	if (nextLevel != 0) {
+		if (nextLevel == 3) {
+			close = true;
+		}
+		else if (nextLevel == 1) {
+			InitLevel1();
+			nextLevel = 0;
+			menu = false;
+		}
+		else {
+			InitLevel2();
+			nextLevel = 0;
+			menu = false;
+		}
+	}
 }
 
 void TutorialGame::UpdateKeys() {
@@ -123,7 +149,7 @@ void TutorialGame::UpdateKeys() {
 	}
 
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F2)) {
-		InitCamera(); //F2 will reset the camera to a specific default place
+		InitCameraMenu(); //F2 will reset the camera to a specific default place
 	}
 
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::G)) {
@@ -235,12 +261,30 @@ void TutorialGame::DebugObjectMovement() {
 	}
 }
 
-void TutorialGame::InitCamera() {
+void TutorialGame::InitCameraMenu() {
+	world->GetMainCamera()->SetNearPlane(0.1f);
+	world->GetMainCamera()->SetFarPlane(500.0f);
+	world->GetMainCamera()->SetPitch(-90.0f);
+	world->GetMainCamera()->SetYaw(0.0f);
+	world->GetMainCamera()->SetPosition(Vector3(0, 40, 0));
+	lockedObject = nullptr;
+}
+
+void TutorialGame::InitCamera1() {
 	world->GetMainCamera()->SetNearPlane(0.1f);
 	world->GetMainCamera()->SetFarPlane(500.0f);
 	world->GetMainCamera()->SetPitch(-15.0f);
-	world->GetMainCamera()->SetYaw(315.0f);
-	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
+	world->GetMainCamera()->SetYaw(15.0f);
+	world->GetMainCamera()->SetPosition(Vector3(60, 100, 100));
+	lockedObject = nullptr;
+}
+
+void TutorialGame::InitCamera2() {
+	world->GetMainCamera()->SetNearPlane(0.1f);
+	world->GetMainCamera()->SetFarPlane(500.0f);
+	world->GetMainCamera()->SetPitch(-15.0f);
+	world->GetMainCamera()->SetYaw(20.0f);
+	world->GetMainCamera()->SetPosition(Vector3(60, 100, 100));
 	lockedObject = nullptr;
 }
 
@@ -255,13 +299,47 @@ void TutorialGame::InitWorld() {
 	testStateObject = AddStateObjectToWorld(Vector3(40, 10, 0));
 }
 
+void TutorialGame::InitMenu() {
+	world->ClearAndErase();
+	physics->Clear();
+	selectionObject = nullptr;
+
+	menu = true;
+	renderer->DrawString("Play Part A", Vector2(10, 10));
+	renderer->DrawString("Play Part B", Vector2(10, 15));
+	renderer->DrawString("Exit", Vector2(10, 20));
+
+	AddCubeToWorld(Vector3(-7,0,0),Vector3(1,1,1),0,"World1");
+	AddSphereToWorld(Vector3(-7, 0, 5), 1, 0,"World2");
+	AddCubeToWorld(Vector3(-7, 0, 10), Vector3(1, 1, 1), 0, "Exit");
+}
+void NCL::CSC8503::TutorialGame::InitLevel1()
+{
+	world->ClearAndErase();
+	physics->Clear();
+	InitCamera1();
+
+	InitDefaultFloor();
+
+	selectionObject = nullptr;
+}
+void NCL::CSC8503::TutorialGame::InitLevel2()
+{
+	world->ClearAndErase();
+	physics->Clear();
+	InitCamera2();
+
+	InitDefaultFloor();
+
+	selectionObject = nullptr;
+}
 void TutorialGame::BridgeConstraintTest() {
 
 	Vector3 cubeSize = Vector3(8, 8, 8);
 
 	float invCubeMass = 5; //how heavy the middle pieces are
 	int numLinks = 10;
-	float maxDistance = 30; // constraint distance
+	float maxDistance = 22; // constraint distance
 	float cubeDistance = 20; // distance between links
 
 	Vector3 startPos = Vector3(00, 00, 00);
@@ -314,8 +392,8 @@ rigid body representation. This and the cube function will let you build a lot o
 physics worlds. You'll probably need another function for the creation of OBB cubes too.
 
 */
-GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass) {
-	GameObject* sphere = new GameObject();
+GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass, string name) {
+	GameObject* sphere = new GameObject(name);
 
 	Vector3 sphereSize = Vector3(radius, radius, radius);
 	SphereVolume* volume = new SphereVolume(radius);
@@ -336,8 +414,8 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	return sphere;
 }
 
-GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass) {
-	GameObject* capsule = new GameObject();
+GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass, string name) {
+	GameObject* capsule = new GameObject(name);
 
 	CapsuleVolume* volume = new CapsuleVolume(halfHeight, radius);
 	capsule->SetBoundingVolume((CollisionVolume*)volume);
@@ -358,8 +436,8 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 
 }
 
-GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
-	GameObject* cube = new GameObject();
+GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, string name ) {
+	GameObject* cube = new GameObject(name);
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 
@@ -545,7 +623,7 @@ bool TutorialGame::SelectObject() {
 		}
 	}
 	if (inSelectionMode) {
-		renderer->DrawString("Press Q to change to camera mode!", Vector2(5, 85));
+		//renderer->DrawString("Press Q to change to camera mode!", Vector2(5, 85));
 
 		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
 			if (selectionObject) {	//set colour to deselected;
@@ -568,15 +646,15 @@ bool TutorialGame::SelectObject() {
 		}
 	}
 	else {
-		renderer->DrawString("Press Q to change to select mode!", Vector2(5, 85));
+		//renderer->DrawString("Press Q to change to select mode!", Vector2(5, 85));
 	}
 
 	if (lockedObject) {
-		renderer->DrawString("Press L to unlock object!", Vector2(5, 80));
+		//renderer->DrawString("Press L to unlock object!", Vector2(5, 80));
 	}
 
 	else if(selectionObject){
-		renderer->DrawString("Press L to lock selected object object!", Vector2(5, 80));
+		//renderer->DrawString("Press L to lock selected object object!", Vector2(5, 80));
 	}
 
 	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) {
@@ -601,12 +679,24 @@ added linear motion into our physics system. After the second tutorial, objects 
 line - after the third, they'll be able to twist under torque aswell.
 */
 void TutorialGame::MoveSelectedObject() {
-	renderer->DrawString("Click Force: " + std::to_string(forceMagnitude), Vector2(10, 20));
+	//renderer->DrawString("Click Force: " + std::to_string(forceMagnitude), Vector2(10, 20));
 
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 
 	if (!selectionObject) {
 		return;
+	}
+
+	if (menu) {
+		if (selectionObject->GetName() == "Exit") {
+			close = true;
+		}
+		if (selectionObject->GetName() == "World1") {
+			nextLevel = 1;
+		}
+		if (selectionObject->GetName() == "World2") {
+			nextLevel = 2;
+		}
 	}
 
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) {

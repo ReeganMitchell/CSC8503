@@ -13,13 +13,27 @@ namespace NCL {
 
 			virtual void UpdateGame(float dt);
 
+			bool close = false;
+
 		protected:
 			void InitialiseAssets();
 
-			void InitCamera();
+			void InitCameraMenu();
+			void InitCamera1();
+			void InitCamera2();
+
 			void UpdateKeys();
 
 			void InitWorld();
+
+			int score; 
+			float totalTime = 0;
+
+			bool menu;
+			int nextLevel;
+			void InitMenu();
+			void InitLevel1();
+			void InitLevel2();
 
 			void InitGameExamples();
 
@@ -35,10 +49,10 @@ namespace NCL {
 			void LockedObjectMovement();
 
 			GameObject* AddFloorToWorld(const Vector3& position);
-			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f);
-			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f);
+			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f, string name = "");
+			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f, string name = "");
 			
-			GameObject* AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass = 10.0f);
+			GameObject* AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass = 10.0f, string name = "");
 
 			GameObject* AddPlayerToWorld(const Vector3& position);
 			GameObject* AddEnemyToWorld(const Vector3& position);

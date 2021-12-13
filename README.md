@@ -9,7 +9,7 @@
 - Different Obstacles
 - Different Surfaces
 - Display Debug information
-- Menu
+- Menu - DONE
 
 ### Part 2
 

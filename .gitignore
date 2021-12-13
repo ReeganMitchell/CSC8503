@@ -10,8 +10,12 @@
 /Common/x64
 /GameTech/x64
 /CSC8503/CSC8503Common/x64
+/CSC8503/CSC8503Common/Debug
 /CSC8503/GameTech/x64
+/CSC8503/GameTech/Debug
 Plugins/OpenGLRendering/x64
+Plugins/OpenGLRendering/Debug
 Plugins/Networking-ENet/x64
+Plugins/Networking-ENet/Debug
 FontBuilder/x64
 OtherProjects/NavMeshVisualiser/x64/Debug

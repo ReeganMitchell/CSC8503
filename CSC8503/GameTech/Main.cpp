@@ -40,6 +40,32 @@ void TestStateMachine() {
 	}
 }
 
+vector <Vector3 > testNodes;
+void TestPathFinding() {
+	NavigationGrid grid("TestGrid1.txt");
+
+	NavigationPath outPath;
+
+	Vector3 startPos(80, 0, 10);
+	Vector3 endPos(80, 0, 80);
+
+	bool found = grid.FindPath(startPos, endPos, outPath);
+
+	Vector3 pos;
+	while (outPath.PopWaypoint(pos)) {
+		testNodes.push_back(pos);
+	}
+}
+
+void DisplayPathfinding() {
+	for (int i = 1; i < testNodes.size(); i++) {
+		Vector3 a = testNodes[i-1];
+		Vector3 b = testNodes[i];
+
+		Debug::DrawLine(a, b, Vector4(1, 1, 1, 1));
+	}
+}
+
 /*
 
 The main function should look pretty familar to you!
@@ -59,12 +85,13 @@ int main() {
 		return -1;
 	}	
 	srand(time(0));
-	w->ShowOSPointer(false);
+	w->ShowOSPointer(true);
 	w->LockMouseToWindow(true);
 
 	TutorialGame* g = new TutorialGame();
 	w->GetTimer()->GetTimeDeltaSeconds(); //Clear the timer so we don't get a larget first dt!
-	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) {
+	//TestPathFinding();
+	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE) && g->close == false) {
 		float dt = w->GetTimer()->GetTimeDeltaSeconds();
 		if (dt > 0.1f) {
 			std::cout << "Skipping large time delta" << std::endl;
@@ -84,6 +111,7 @@ int main() {
 		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
 
 		g->UpdateGame(dt);
+		//DisplayPathfinding();
 	}
 	Window::DestroyGameWindow();
 }
