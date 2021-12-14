@@ -49,8 +49,8 @@ void TutorialGame::InitialiseAssets() {
 	basicShader = new OGLShader("GameTechVert.glsl", "GameTechFrag.glsl");
 
 	InitCameraMenu();
-	//InitWorld();
-	InitMenu();
+	InitWorld();
+	//InitMenu();
 }
 
 TutorialGame::~TutorialGame()	{
@@ -291,12 +291,17 @@ void TutorialGame::InitCamera2() {
 void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
+	InitCamera1();
 
-	//InitMixedGridWorld(5, 5, 3.5f, 3.5f);
+	//InitMixedGridWorld(2, 1, 3.5f, 3.5f);
+
+	AddCubeToWorld(Vector3(0, 0, 0), Vector3(1, 1, 1), 10.0f, "OBB");
+	AddSphereToWorld(Vector3(3.5, 0, 0), 1, 10.0f, "Sphere");
+
 	//InitGameExamples();
-	BridgeConstraintTest();
+	//BridgeConstraintTest();
 	//InitDefaultFloor();
-	testStateObject = AddStateObjectToWorld(Vector3(40, 10, 0));
+	//testStateObject = AddStateObjectToWorld(Vector3(40, 10, 0));
 }
 
 void TutorialGame::InitMenu() {
@@ -320,6 +325,7 @@ void NCL::CSC8503::TutorialGame::InitLevel1()
 	InitCamera1();
 
 	InitDefaultFloor();
+	BridgeConstraintTest();
 
 	selectionObject = nullptr;
 }
@@ -339,7 +345,7 @@ void TutorialGame::BridgeConstraintTest() {
 
 	float invCubeMass = 5; //how heavy the middle pieces are
 	int numLinks = 10;
-	float maxDistance = 22; // constraint distance
+	float maxDistance = 24; // constraint distance
 	float cubeDistance = 20; // distance between links
 
 	Vector3 startPos = Vector3(00, 00, 00);
@@ -439,7 +445,7 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, string name ) {
 	GameObject* cube = new GameObject(name);
 
-	AABBVolume* volume = new AABBVolume(dimensions);
+	OBBVolume* volume = new OBBVolume(dimensions);
 
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
