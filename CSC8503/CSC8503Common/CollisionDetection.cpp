@@ -325,6 +325,7 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 	Transform& transformA = a->GetTransform();
 	Transform& transformB = b->GetTransform();
 
+
 	VolumeType pairType = (VolumeType)((int)volA->type | (int)volB->type);
 
 	if (pairType == VolumeType::AABB) {
@@ -336,7 +337,8 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 	}
 
 	if (pairType == VolumeType::OBB) {
-		return OBBIntersection((OBBVolume&)*volA, transformA, (OBBVolume&)*volB, transformB, collisionInfo);
+		//return OBBIntersection((OBBVolume&)*volA, transformA, (OBBVolume&)*volB, transformB, collisionInfo);
+		return AABBIntersection((AABBVolume&)* volA, transformA, (AABBVolume&)* volB, transformB, collisionInfo);
 	}
 
 	if (volA->type == VolumeType::AABB && volB->type == VolumeType::Sphere) {
@@ -346,6 +348,22 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 		collisionInfo.a = b;
 		collisionInfo.b = a;
 		return AABBSphereIntersection((AABBVolume&)*volB, transformB, (SphereVolume&)*volA, transformA, collisionInfo);
+	}
+
+	if (volA->type == VolumeType::AABB && volB->type == VolumeType::OBB) {
+		return AABBIntersection((AABBVolume&)* volA, transformA, (AABBVolume&)* volB, transformB, collisionInfo);
+	}
+	if (volA->type == VolumeType::OBB && volB->type == VolumeType::AABB) {
+		return AABBIntersection((AABBVolume&)* volA, transformA, (AABBVolume&)* volB, transformB, collisionInfo);
+	}
+
+	if (volA->type == VolumeType::OBB && volB->type == VolumeType::Sphere) {
+		return OBBSphereIntersection((OBBVolume&)* volA, transformA, (SphereVolume&)* volB, transformB, collisionInfo);
+	}
+	if (volA->type == VolumeType::Sphere && volB->type == VolumeType::OBB) {
+		collisionInfo.a = b;
+		collisionInfo.b = a;
+		return OBBSphereIntersection((OBBVolume&)* volB, transformB, (SphereVolume&)* volA, transformA, collisionInfo);
 	}
 
 	if (volA->type == VolumeType::Capsule && volB->type == VolumeType::Sphere) {
@@ -463,6 +481,30 @@ bool CollisionDetection::AABBSphereIntersection(const AABBVolume& volumeA, const
 bool CollisionDetection::OBBIntersection(
 	const OBBVolume& volumeA, const Transform& worldTransformA,
 	const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+	return false;
+}
+
+bool CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
+{
+	Quaternion orientation = worldTransformA.GetOrientation();
+	Vector3 position = worldTransformA.GetPosition();
+
+	Matrix3 transform = Matrix3(orientation);
+	Matrix3 invTransform = Matrix3(orientation.Conjugate());
+
+	Vector3 localSpherePos = worldTransformB.GetPosition() - position;
+
+	Transform tempSpherePos;
+	tempSpherePos.SetPosition(invTransform * localSpherePos);
+	Transform tempCube;
+
+	AABBVolume* volume = new AABBVolume(volumeA.GetHalfDimensions());
+
+	bool collided = AABBSphereIntersection((AABBVolume&)*volume,tempCube,volumeB,tempSpherePos,collisionInfo);
+
+	if (collided) {
+		return true;
+	}
 	return false;
 }
 
