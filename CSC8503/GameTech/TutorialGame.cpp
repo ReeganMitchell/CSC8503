@@ -48,6 +48,11 @@ void TutorialGame::InitialiseAssets() {
 	basicTex	= (OGLTexture*)TextureLoader::LoadAPITexture("checkerboard.png");
 	basicShader = new OGLShader("GameTechVert.glsl", "GameTechFrag.glsl");
 
+	score = 0;
+	menu = 0;
+	win = 0;
+	lose = 0;
+
 	InitCameraMenu();
 	InitWorld();
 	//InitMenu();
@@ -89,12 +94,36 @@ void TutorialGame::UpdateGame(float dt) {
 		renderer->DrawString("Play Part B", Vector2(45, 65));
 		renderer->DrawString("Exit", Vector2(45, 80));
 	}
+	if (win) {
+		renderer->DrawString("You Win!", Vector2(45, 50));
+		renderer->DrawString("Return to Menu", Vector2(45, 65));
+		renderer->DrawString("Exit", Vector2(45, 80));
+	}
+	if (lose) {
+		renderer->DrawString("You Lose.", Vector2(45, 50));
+		renderer->DrawString("Return to Menu", Vector2(45, 65));
+		renderer->DrawString("Exit", Vector2(45, 80));
+	}
 
 	SelectObject();
 	MoveSelectedObject();
-	physics->Update(dt);
+	int result = physics->Update(dt);
 
-
+	if (result == 1) {
+		//Dead
+		nextLevel = 5;
+		lose = true;
+	}
+	else if (result == 2) {
+		//Next Level / win
+		if (stage != 2) {
+			stage++;
+		}
+		else {
+			win = true;
+			nextLevel = 4;
+		}
+	}
 
 	if (lockedObject != nullptr) {
 		Vector3 objPos = lockedObject->GetTransform().GetPosition();
@@ -125,18 +154,44 @@ void TutorialGame::UpdateGame(float dt) {
 	renderer->Render();
 
 	if (nextLevel != 0) {
-		if (nextLevel == 3) {
+		selectionObject = nullptr;
+		if (nextLevel == 6) {
 			close = true;
 		}
 		else if (nextLevel == 1) {
 			InitLevel1();
 			nextLevel = 0;
 			menu = false;
+			win = false;
+			lose = false;
 		}
-		else {
+		else if (nextLevel == 2) {
 			InitLevel2();
 			nextLevel = 0;
 			menu = false;
+			win = false;
+			lose = false;
+		}
+		else if (nextLevel == 3) {
+			InitMenu();
+			nextLevel = 0;
+			menu = true;
+			win = false;
+			lose = false;
+		}
+		else if (nextLevel == 4) {
+			InitResultScreen(true);
+			nextLevel = 0;
+			menu = false;
+			win = true;
+			lose = false;
+		}
+		else if (nextLevel == 5) {
+			InitResultScreen(false);
+			nextLevel = 0;
+			menu = false;
+			win = false;
+			lose = true;
 		}
 	}
 }
@@ -292,11 +347,13 @@ void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
 	InitCamera1();
+	selectionObject = nullptr;
 
 	//InitMixedGridWorld(2, 1, 3.5f, 3.5f);
 
-	AddCubeToWorld(Vector3(0, 0, 0), Vector3(1, 1, 1), 10.0f, "OBB");
-	AddSphereToWorld(Vector3(3.5, 0, 0), 1, 10.0f, "Sphere");
+	AddCubeToWorld(Vector3(0, 2, 0), Vector3(1, 1, 1), 10.0f, "Menu");
+	AddSphereToWorld(Vector3(3.5, 2, 0), 1, 10.0f, "Player");
+	AddPlaneToWorld(Vector3(0, 0, 0), 1);
 
 	//InitGameExamples();
 	//BridgeConstraintTest();
@@ -307,6 +364,7 @@ void TutorialGame::InitWorld() {
 void TutorialGame::InitMenu() {
 	world->ClearAndErase();
 	physics->Clear();
+	InitCameraMenu();
 	selectionObject = nullptr;
 
 	menu = true;
@@ -318,7 +376,26 @@ void TutorialGame::InitMenu() {
 	AddSphereToWorld(Vector3(-7, 0, 5), 1, 0,"World2");
 	AddCubeToWorld(Vector3(-7, 0, 10), Vector3(1, 1, 1), 0, "Exit");
 }
-void NCL::CSC8503::TutorialGame::InitLevel1()
+
+void TutorialGame::InitResultScreen(bool didWin)
+{
+	world->ClearAndErase();
+	physics->Clear();
+	InitCameraMenu();
+	selectionObject = nullptr;
+
+	menu = false;
+	win = didWin;
+	lose = !didWin;
+	renderer->DrawString("You Win!", Vector2(10, 5));
+	renderer->DrawString("Return to Menu", Vector2(10, 10));
+	renderer->DrawString("Exit", Vector2(10, 20));
+
+	AddCubeToWorld(Vector3(-7, 0, 5), Vector3(1, 1, 1), 0, "Menu");
+	AddCubeToWorld(Vector3(-7, 0, 10), Vector3(1, 1, 1), 0, "Exit");
+}
+
+void TutorialGame::InitLevel1()
 {
 	world->ClearAndErase();
 	physics->Clear();
@@ -329,7 +406,7 @@ void NCL::CSC8503::TutorialGame::InitLevel1()
 
 	selectionObject = nullptr;
 }
-void NCL::CSC8503::TutorialGame::InitLevel2()
+void TutorialGame::InitLevel2()
 {
 	world->ClearAndErase();
 	physics->Clear();
@@ -389,6 +466,23 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	world->AddGameObject(floor);
 
 	return floor;
+}
+
+GameObject* TutorialGame::AddPlaneToWorld(const Vector3& position, const int axis) {
+	GameObject* plane = new GameObject("KillPlane");
+
+	PlaneVolume* volume = new PlaneVolume(1);
+	plane->SetBoundingVolume((CollisionVolume*)volume);
+	plane->GetTransform().SetPosition(Vector3(0, 0, 0));
+
+	plane->SetPhysicsObject(new PhysicsObject(&plane->GetTransform(), plane->GetBoundingVolume()));
+
+	plane->GetPhysicsObject()->SetInverseMass(0);
+	plane->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(plane);
+
+	return plane;
 }
 
 /*
@@ -631,7 +725,7 @@ bool TutorialGame::SelectObject() {
 	if (inSelectionMode) {
 		//renderer->DrawString("Press Q to change to camera mode!", Vector2(5, 85));
 
-		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
+		if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::LEFT)) {
 			if (selectionObject) {	//set colour to deselected;
 				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
 				selectionObject = nullptr;
@@ -693,7 +787,7 @@ void TutorialGame::MoveSelectedObject() {
 		return;
 	}
 
-	if (menu) {
+	if (menu || win || lose) {
 		if (selectionObject->GetName() == "Exit") {
 			close = true;
 		}
@@ -702,6 +796,9 @@ void TutorialGame::MoveSelectedObject() {
 		}
 		if (selectionObject->GetName() == "World2") {
 			nextLevel = 2;
+		}
+		if (selectionObject->GetName() == "Menu") {
+			nextLevel = 3;
 		}
 	}
 

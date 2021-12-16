@@ -10,6 +10,7 @@
 #include "OBBVolume.h"
 #include "SphereVolume.h"
 #include "CapsuleVolume.h"
+#include "PlaneVolume.h"
 #include "Ray.h"
 
 using NCL::Camera;
@@ -98,6 +99,9 @@ namespace NCL {
 
 		static bool OBBSphereIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, 
 										const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
+
+		static bool PlaneSphereIntersection(const PlaneVolume& volumeA, const Transform& worldTransformA,
+			const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
 
 		static Vector3 Unproject(const Vector3& screenPos, const Camera& cam);
 

@@ -30,8 +30,14 @@ namespace NCL {
 			float totalTime = 0;
 
 			bool menu;
+			bool win;
+			bool lose;
 			int nextLevel;
+			int stage;
+
 			void InitMenu();
+			void InitResultScreen(bool win);
+
 			void InitLevel1();
 			void InitLevel2();
 
@@ -49,6 +55,7 @@ namespace NCL {
 			void LockedObjectMovement();
 
 			GameObject* AddFloorToWorld(const Vector3& position);
+			GameObject* AddPlaneToWorld(const Vector3& position, const int axis);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f, string name = "");
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f, string name = "");
 			

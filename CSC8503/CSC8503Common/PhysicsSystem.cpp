@@ -68,7 +68,8 @@ being at a low rate.
 int realHZ		= idealHZ;
 float realDT	= idealDT;
 
-void PhysicsSystem::Update(float dt) {	
+int PhysicsSystem::Update(float dt) {	
+	result = 0;
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::B)) {
 		useBroadPhase = !useBroadPhase;
 		std::cout << "Setting broadphase to " << useBroadPhase << std::endl;
@@ -139,6 +140,7 @@ void PhysicsSystem::Update(float dt) {
 			std::cout << "Raising iteration count due to short physics time...(now " << realHZ << ")\n";
 		}
 	}
+	return result;
 }
 
 /*
@@ -206,6 +208,8 @@ void PhysicsSystem::BasicCollisionDetection() {
 				ImpulseResolveCollision(*info.a, *info.b, info.point);
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);
+
+				CheckForImportantCollisions(*info.a, *info.b);
 			}
 		}
 	}
@@ -264,6 +268,16 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	physB->ApplyAngularImpulse(Vector3::Cross(relativeB, fullImpulse));
 }
 
+void PhysicsSystem::CheckForImportantCollisions(GameObject& a, GameObject& b)
+{
+	if ((a.GetName() == "Player" && b.GetName() == "KillPlane") || (a.GetName() == "KillPlane" && b.GetName() == "Player")) {
+		result = 1;
+	}
+	else if ((a.GetName() == "Player" && b.GetName() == "End") || (a.GetName() == "End" && b.GetName() == "Player")) {
+		result = 2;
+	}
+}
+
 /*
 
 Later, we replace the BasicCollisionDetection method with a broadphase
@@ -309,9 +323,11 @@ void PhysicsSystem::NarrowPhase() {
 	for (std::set<CollisionDetection::CollisionInfo>::iterator i = broadphaseCollisions.begin(); i != broadphaseCollisions.end(); i++) {
 		CollisionDetection::CollisionInfo info = *i;
 		if (CollisionDetection::ObjectIntersection(info.a, info.b, info)) {
+			std::cout << "Collision between " << info.a->GetName() << " and " << info.b->GetName() << std::endl;
 			info.framesLeft = numCollisionFrames;
 			ImpulseResolveCollision(*info.a, *info.b, info.point);
 			allCollisions.insert(info);
+			CheckForImportantCollisions(*info.a, *info.b);
 		}
 	}
 }

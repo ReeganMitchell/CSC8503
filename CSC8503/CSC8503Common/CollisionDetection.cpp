@@ -375,6 +375,13 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 		return SphereCapsuleIntersection((CapsuleVolume&)*volB, transformB, (SphereVolume&)*volA, transformA, collisionInfo);
 	}
 
+	if (volA->type == VolumeType::Sphere && volB->type == VolumeType::Plane) {
+		return PlaneSphereIntersection((PlaneVolume&)* volB, transformB, (SphereVolume&)* volA, transformA, collisionInfo);
+	}
+	if (volA->type == VolumeType::Plane && volB->type == VolumeType::Sphere) {
+		return PlaneSphereIntersection((PlaneVolume&)*volA,transformA, (SphereVolume&)*volB,transformB,collisionInfo);
+	}
+
 	return false;
 }
 
@@ -504,6 +511,42 @@ bool CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const T
 
 	if (collided) {
 		return true;
+	}
+	return false;
+}
+
+bool CollisionDetection::PlaneSphereIntersection(const PlaneVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
+{
+	int axis = volumeA.GetAxis();
+	if (axis == 0) {
+		float delta = worldTransformB.GetPosition().x - worldTransformA.GetPosition().x;
+		if (abs(delta) <= volumeB.GetRadius()) {
+			Vector3 normal = Vector3(1, 0, 0);
+			float penetration = volumeB.GetRadius() - abs(delta);
+
+			collisionInfo.AddContactPoint(worldTransformA.GetPosition(), worldTransformB.GetPosition(), normal, penetration);
+			return true;
+		}
+	}
+	if (axis == 1) {
+		float delta = worldTransformB.GetPosition().y - worldTransformA.GetPosition().y;
+		if (abs(delta) <= volumeB.GetRadius()) {
+			Vector3 normal = Vector3(0, -1, 0);
+			float penetration = volumeB.GetRadius() - abs(delta);
+
+			collisionInfo.AddContactPoint(worldTransformA.GetPosition(), worldTransformB.GetPosition(), normal, penetration);
+			return true;
+		}
+	}
+	if (axis == 2) {
+		float delta = worldTransformB.GetPosition().z - worldTransformA.GetPosition().z;
+		if (abs(delta) <= volumeB.GetRadius()) {
+			Vector3 normal = Vector3(0, 0, 1);
+			float penetration = volumeB.GetRadius() - abs(delta);
+
+			collisionInfo.AddContactPoint(worldTransformA.GetPosition(), worldTransformB.GetPosition(), normal, penetration);
+			return true;
+		}
 	}
 	return false;
 }

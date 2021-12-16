@@ -11,7 +11,7 @@ namespace NCL {
 
 			void Clear();
 
-			void Update(float dt);
+			int Update(float dt);
 
 			void UseGravity(bool state) {
 				applyGravity = state;
@@ -39,6 +39,8 @@ namespace NCL {
 
 			void ImpulseResolveCollision(GameObject& a , GameObject&b, CollisionDetection::ContactPoint& p) const;
 
+			void CheckForImportantCollisions(GameObject& a, GameObject& b);
+
 			GameWorld& gameWorld;
 
 			bool	applyGravity;
@@ -51,6 +53,8 @@ namespace NCL {
 
 			bool useBroadPhase		= true;
 			int numCollisionFrames	= 5;
+
+			int result;
 		};
 	}
 }

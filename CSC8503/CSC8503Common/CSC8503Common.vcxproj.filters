@@ -105,6 +105,9 @@
     <ClInclude Include="PositionConstraint.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="PlaneVolume.h">
+      <Filter>CollisionDetection</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameWorld.cpp">
