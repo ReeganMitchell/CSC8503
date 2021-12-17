@@ -90,7 +90,7 @@ int main() {
 
 	TutorialGame* g = new TutorialGame();
 	w->GetTimer()->GetTimeDeltaSeconds(); //Clear the timer so we don't get a larget first dt!
-	//TestPathFinding();
+	TestPathFinding();
 	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE) && g->close == false) {
 		float dt = w->GetTimer()->GetTimeDeltaSeconds();
 		if (dt > 0.1f) {
@@ -111,7 +111,7 @@ int main() {
 		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
 
 		g->UpdateGame(dt);
-		//DisplayPathfinding();
+		DisplayPathfinding();
 	}
 	Window::DestroyGameWindow();
 }

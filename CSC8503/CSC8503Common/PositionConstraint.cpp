@@ -13,7 +13,9 @@ void PositionConstraint::UpdateConstraint(float dt)
 
 	float offset = distance - currentDistance;
 
-	if (offset < 0.0f) {
+	float minOffset = minDistance - currentDistance;
+
+	if (offset < 0.0f || minOffset > 0.0f) {
 		Vector3 offsetDir = relativePos.Normalised();
 
 		PhysicsObject* physA = objectA->GetPhysicsObject();
@@ -32,10 +34,10 @@ void PositionConstraint::UpdateConstraint(float dt)
 
 			float lambda = -(velocityDot + bias) / constraintMass;
 
-			Vector3 aImpulse = offsetDir * lambda;
-			Vector3 bImpulse = -offsetDir * lambda;
+			Vector3 aImpulse = offsetDir * lambda * .4;
+			Vector3 bImpulse = -offsetDir * lambda * .4;
 
-			physA->ApplyLinearImpulse(aImpulse);// multiplied by mass here
+    		physA->ApplyLinearImpulse(aImpulse);// multiplied by mass here
 			physB->ApplyLinearImpulse(bImpulse);// multiplied by mass here
 		}
 	}

@@ -5,6 +5,7 @@
 #include "../../Plugins/OpenGLRendering/OGLTexture.h"
 #include "../../Common/TextureLoader.h"
 #include "../CSC8503Common/PositionConstraint.h"
+#include <sstream>
 
 using namespace NCL;
 using namespace CSC8503;
@@ -54,8 +55,8 @@ void TutorialGame::InitialiseAssets() {
 	lose = 0;
 
 	InitCameraMenu();
-	InitWorld();
-	//InitMenu();
+	//InitWorld();
+	InitMenu();
 }
 
 TutorialGame::~TutorialGame()	{
@@ -95,11 +96,17 @@ void TutorialGame::UpdateGame(float dt) {
 		renderer->DrawString("Exit", Vector2(45, 80));
 	}
 	if (win) {
+		string s = "score = ";
+		s.append(std::to_string(score));
+		renderer->DrawString(s, Vector2(42, 30));
 		renderer->DrawString("You Win!", Vector2(45, 50));
 		renderer->DrawString("Return to Menu", Vector2(45, 65));
 		renderer->DrawString("Exit", Vector2(45, 80));
 	}
 	if (lose) {
+		string s = "score = ";
+		s.append(std::to_string(score));
+		renderer->DrawString(s, Vector2(42, 30));
 		renderer->DrawString("You Lose.", Vector2(45, 50));
 		renderer->DrawString("Return to Menu", Vector2(45, 65));
 		renderer->DrawString("Exit", Vector2(45, 80));
@@ -118,11 +125,17 @@ void TutorialGame::UpdateGame(float dt) {
 		//Next Level / win
 		if (stage != 2) {
 			stage++;
+			nextLevel = 1;
+			score = score + 100;
 		}
 		else {
 			win = true;
 			nextLevel = 4;
+			score = score + 100;
 		}
+	}
+	else if (result == 3) {
+		score = score + 50;
 	}
 
 	if (lockedObject != nullptr) {
@@ -146,6 +159,15 @@ void TutorialGame::UpdateGame(float dt) {
 	if (testStateObject) {
 		testStateObject->Update(dt);
 	}
+	if (thruster) {
+		thruster->Update(dt);
+	}
+	if (posObs) {
+		posObs->Update(dt);
+	}
+	if (rotObs) {
+		rotObs->Update(dt);
+	}
 
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
@@ -155,11 +177,14 @@ void TutorialGame::UpdateGame(float dt) {
 
 	if (nextLevel != 0) {
 		selectionObject = nullptr;
+		thruster = nullptr;
+		posObs = nullptr;
+		rotObs = nullptr;
 		if (nextLevel == 6) {
 			close = true;
 		}
 		else if (nextLevel == 1) {
-			InitLevel1();
+ 			ChooseStage();
 			nextLevel = 0;
 			menu = false;
 			win = false;
@@ -328,9 +353,9 @@ void TutorialGame::InitCameraMenu() {
 void TutorialGame::InitCamera1() {
 	world->GetMainCamera()->SetNearPlane(0.1f);
 	world->GetMainCamera()->SetFarPlane(500.0f);
-	world->GetMainCamera()->SetPitch(-15.0f);
-	world->GetMainCamera()->SetYaw(15.0f);
-	world->GetMainCamera()->SetPosition(Vector3(60, 100, 100));
+	world->GetMainCamera()->SetPitch(0.0f);
+	world->GetMainCamera()->SetYaw(0.0f);
+	world->GetMainCamera()->SetPosition(Vector3(0, 10, 100));
 	lockedObject = nullptr;
 }
 
@@ -352,7 +377,7 @@ void TutorialGame::InitWorld() {
 	//InitMixedGridWorld(2, 1, 3.5f, 3.5f);
 
 	AddCubeToWorld(Vector3(0, 2, 0), Vector3(1, 1, 1), 10.0f, "Menu");
-	AddSphereToWorld(Vector3(3.5, 2, 0), 1, 10.0f, "Player");
+	AddPlayerToWorld(Vector3(3.5, 2, 0));
 	AddPlaneToWorld(Vector3(0, 0, 0), 1);
 
 	//InitGameExamples();
@@ -366,6 +391,9 @@ void TutorialGame::InitMenu() {
 	physics->Clear();
 	InitCameraMenu();
 	selectionObject = nullptr;
+
+	score = 0;
+	stage = 0;
 
 	menu = true;
 	renderer->DrawString("Play Part A", Vector2(10, 10));
@@ -395,17 +423,64 @@ void TutorialGame::InitResultScreen(bool didWin)
 	AddCubeToWorld(Vector3(-7, 0, 10), Vector3(1, 1, 1), 0, "Exit");
 }
 
-void TutorialGame::InitLevel1()
+void TutorialGame::ChooseStage()
+{
+	if (stage == 0) {
+		InitLevel1A();
+	}
+	if (stage == 1) {
+		InitLevel1B();
+	}
+	if (stage == 2) {
+		InitLevel1C();
+	}
+}
+
+void TutorialGame::InitLevel1A()
 {
 	world->ClearAndErase();
 	physics->Clear();
 	InitCamera1();
 
-	InitDefaultFloor();
-	BridgeConstraintTest();
+	AddCubeToWorld(Vector3(0, 40, 0), Vector3(4, 1, 2), 0, "End");
+	thruster = AddThrusterToWorld(Vector3(0, 0, 0), Vector3(4, 1, 2));
+	AddPlayerToWorld(Vector3(0, 5, 0));
+	AddPlaneToWorld(Vector3(0, 0, 0), 1);
 
 	selectionObject = nullptr;
 }
+
+void TutorialGame::InitLevel1B()
+{
+	world->ClearAndErase();
+	physics->Clear();
+	InitCamera1();
+
+	AddCubeToWorld(Vector3(0, 40, 0), Vector3(4, 1, 2), 0, "End");
+	thruster = AddThrusterToWorld(Vector3(0, 0, 0), Vector3(4, 1, 2));
+	posObs = AddPositionObstacleToWorld(2);
+	AddPlayerToWorld(Vector3(0, 5, 0));
+	AddPlaneToWorld(Vector3(0, 0, 0), 1);
+
+	selectionObject = nullptr;
+}
+
+void TutorialGame::InitLevel1C()
+{
+	world->ClearAndErase();
+	physics->Clear();
+	InitCamera1();
+
+	AddCubeToWorld(Vector3(0, 40, 0), Vector3(4, 1, 2), 0, "End");
+	thruster = AddThrusterToWorld(Vector3(0, 0, 0), Vector3(4, 1, 2));
+	rotObs = AddRotationObstacleToWorld();
+	AddPlayerToWorld(Vector3(0, 5, 0));
+	AddPlaneToWorld(Vector3(0, 0, 0), 1);
+	AddBonusToWorld(Vector3(-10, 15, 0));
+
+	selectionObject = nullptr;
+}
+
 void TutorialGame::InitLevel2()
 {
 	world->ClearAndErase();
@@ -539,7 +614,7 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, string name ) {
 	GameObject* cube = new GameObject(name);
 
-	OBBVolume* volume = new OBBVolume(dimensions);
+	AABBVolume* volume = new AABBVolume(dimensions);
 
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
@@ -556,6 +631,133 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	world->AddGameObject(cube);
 
 	return cube;
+}
+
+ThrusterObject* TutorialGame::AddThrusterToWorld(const Vector3& position, Vector3 dimensions)
+{
+	GameObject* cube = new GameObject("Base");
+	AABBVolume* volumeC = new AABBVolume(dimensions);
+	cube->SetBoundingVolume((CollisionVolume*)volumeC);
+	cube->GetTransform()
+		.SetPosition(position)
+		.SetScale(dimensions * 2);
+
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+
+	cube->GetPhysicsObject()->SetInverseMass(0);
+	cube->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(cube);
+
+
+	ThrusterObject* newThruster = new ThrusterObject();
+	AABBVolume* volumeT = new AABBVolume(dimensions);
+	
+	newThruster->SetBoundingVolume((CollisionVolume*)volumeT);
+	newThruster->GetTransform()
+		.SetPosition(Vector3(position.x, position.y + 2, position.z))
+		.SetScale(dimensions * 2);
+
+	newThruster->SetRenderObject(new RenderObject(&newThruster->GetTransform(), cubeMesh, basicTex, basicShader));
+	PhysicsObject* po = new PhysicsObject(&newThruster->GetTransform(), newThruster->GetBoundingVolume());
+	po->SetElasticity(0.5f);
+	newThruster->SetPhysicsObject(po);
+
+	newThruster->GetPhysicsObject()->SetInverseMass(10.0f);
+	newThruster->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(newThruster);
+
+	PositionConstraint* constraint = new PositionConstraint(cube, newThruster, 5);
+
+	world->AddConstraint(constraint);
+
+	return newThruster;
+}
+
+PositionObstacle* TutorialGame::AddPositionObstacleToWorld(float radius)
+{
+	GameObject* clamp = new GameObject("Obstacle Clamp");
+	AABBVolume* volume = new AABBVolume(Vector3(0.5f, 0.5f, 0.5f));
+
+	clamp->SetBoundingVolume((CollisionVolume*)volume);
+
+	clamp->GetTransform().SetPosition(Vector3(0,41,0)).SetScale(Vector3(1,1,1));
+
+	clamp->SetRenderObject(new RenderObject(&clamp->GetTransform(), cubeMesh, basicTex, basicShader));
+	clamp->SetPhysicsObject(new PhysicsObject(&clamp->GetTransform(), clamp->GetBoundingVolume()));
+
+	clamp->GetPhysicsObject()->SetInverseMass(0);
+	clamp->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(clamp);
+
+	PositionObstacle* obs = new PositionObstacle();
+	Vector3 sphereSize = Vector3(radius, radius, radius);
+	SphereVolume* volumeS = new SphereVolume(radius);
+	obs->SetBoundingVolume((CollisionVolume*)volumeS);
+
+	obs->GetTransform()
+		.SetScale(sphereSize)
+		.SetPosition(Vector3(2,20,0));
+
+	obs->SetRenderObject(new RenderObject(&obs->GetTransform(), sphereMesh, basicTex, basicShader));
+	obs->SetPhysicsObject(new PhysicsObject(&obs->GetTransform(), obs->GetBoundingVolume()));
+
+	obs->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+
+	obs->GetPhysicsObject()->SetInverseMass(5.0f);
+	obs->GetPhysicsObject()->InitSphereInertia();
+
+	world->AddGameObject(obs);
+
+	PositionConstraint* constraint = new PositionConstraint(obs, clamp, 20, 19);
+
+	world->AddConstraint(constraint);
+
+	return obs;
+}
+
+RotationObstacle* TutorialGame::AddRotationObstacleToWorld()
+{
+	GameObject* clamp = new GameObject("Obstacle Clamp");
+	AABBVolume* volumeC = new AABBVolume(Vector3(0.5f, 0.5f, 0.5f));
+
+	clamp->SetBoundingVolume((CollisionVolume*)volumeC);
+
+	clamp->GetTransform().SetPosition(Vector3(5, 41, 0)).SetScale(Vector3(1, 1, 1));
+
+	clamp->SetRenderObject(new RenderObject(&clamp->GetTransform(), cubeMesh, basicTex, basicShader));
+	clamp->SetPhysicsObject(new PhysicsObject(&clamp->GetTransform(), clamp->GetBoundingVolume()));
+
+	clamp->GetPhysicsObject()->SetInverseMass(0);
+	clamp->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(clamp);
+
+
+	RotationObstacle* obs = new RotationObstacle();
+	OBBVolume* volume = new OBBVolume(Vector3(10,1,1));
+
+	obs->SetBoundingVolume((CollisionVolume*)volume);
+
+	obs->GetTransform().SetPosition(Vector3(5, 21, 0)).SetScale(Vector3(20, 2, 2));
+
+	obs->SetRenderObject(new RenderObject(&obs->GetTransform(), cubeMesh, basicTex, basicShader));
+	obs->SetPhysicsObject(new PhysicsObject(&obs->GetTransform(), obs->GetBoundingVolume()));
+
+	obs->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+
+	obs->GetPhysicsObject()->SetInverseMass(0.1);
+	obs->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(obs);
+
+	PositionConstraint* constraint = new PositionConstraint(obs, clamp, 20, 19);
+	world->AddConstraint(constraint);
+
+	return obs;
 }
 
 void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius) {
@@ -606,36 +808,61 @@ void TutorialGame::InitGameExamples() {
 }
 
 GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
-	float meshSize = 3.0f;
-	float inverseMass = 0.5f;
+	GameObject* sphere = new GameObject("Player");
 
-	GameObject* character = new GameObject();
+	Vector3 sphereSize = Vector3(1.0f, 1.0f, 1.0f);
+	SphereVolume* volume = new SphereVolume(1.0f);
+	sphere->SetBoundingVolume((CollisionVolume*)volume);
 
-	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.85f, 0.3f) * meshSize);
-
-	character->SetBoundingVolume((CollisionVolume*)volume);
-
-	character->GetTransform()
-		.SetScale(Vector3(meshSize, meshSize, meshSize))
+	sphere->GetTransform()
+		.SetScale(sphereSize)
 		.SetPosition(position);
 
-	if (rand() % 2) {
-		character->SetRenderObject(new RenderObject(&character->GetTransform(), charMeshA, nullptr, basicShader));
-	}
-	else {
-		character->SetRenderObject(new RenderObject(&character->GetTransform(), charMeshB, nullptr, basicShader));
-	}
-	character->SetPhysicsObject(new PhysicsObject(&character->GetTransform(), character->GetBoundingVolume()));
+	PhysicsObject* po = new PhysicsObject(&sphere->GetTransform(), sphere->GetBoundingVolume());
+	po->SetElasticity(2.0f);
 
-	character->GetPhysicsObject()->SetInverseMass(inverseMass);
-	character->GetPhysicsObject()->InitSphereInertia();
+	sphere->SetRenderObject(new RenderObject(&sphere->GetTransform(), sphereMesh, basicTex, basicShader));
+	sphere->SetPhysicsObject(po);
 
-	world->AddGameObject(character);
+	sphere->GetPhysicsObject()->SetInverseMass(10.0f);
+	sphere->GetPhysicsObject()->InitSphereInertia();
 
-	//lockedObject = character;
+	world->AddGameObject(sphere);
 
-	return character;
+	return sphere;
 }
+
+//GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
+//	float meshSize = 3.0f;
+//	float inverseMass = 0.5f;
+//
+//	GameObject* character = new GameObject();
+//
+//	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.85f, 0.3f) * meshSize);
+//
+//	character->SetBoundingVolume((CollisionVolume*)volume);
+//
+//	character->GetTransform()
+//		.SetScale(Vector3(meshSize, meshSize, meshSize))
+//		.SetPosition(position);
+//
+//	if (rand() % 2) {
+//		character->SetRenderObject(new RenderObject(&character->GetTransform(), charMeshA, nullptr, basicShader));
+//	}
+//	else {
+//		character->SetRenderObject(new RenderObject(&character->GetTransform(), charMeshB, nullptr, basicShader));
+//	}
+//	character->SetPhysicsObject(new PhysicsObject(&character->GetTransform(), character->GetBoundingVolume()));
+//
+//	character->GetPhysicsObject()->SetInverseMass(inverseMass);
+//	character->GetPhysicsObject()->InitSphereInertia();
+//
+//	world->AddGameObject(character);
+//
+//	//lockedObject = character;
+//
+//	return character;
+//}
 
 GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 	float meshSize		= 3.0f;
@@ -662,7 +889,7 @@ GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
 }
 
 GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
-	GameObject* apple = new GameObject();
+	GameObject* apple = new GameObject("Bonus");
 
 	SphereVolume* volume = new SphereVolume(0.25f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
@@ -673,7 +900,9 @@ GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
 	apple->SetRenderObject(new RenderObject(&apple->GetTransform(), bonusMesh, nullptr, basicShader));
 	apple->SetPhysicsObject(new PhysicsObject(&apple->GetTransform(), apple->GetBoundingVolume()));
 
-	apple->GetPhysicsObject()->SetInverseMass(1.0f);
+	apple->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+
+	apple->GetPhysicsObject()->SetInverseMass(0.0f);
 	apple->GetPhysicsObject()->InitSphereInertia();
 
 	world->AddGameObject(apple);
@@ -681,7 +910,7 @@ GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
 	return apple;
 }
 
-StateGameObject* NCL::CSC8503::TutorialGame::AddStateObjectToWorld(const Vector3& position)
+StateGameObject* TutorialGame::AddStateObjectToWorld(const Vector3& position)
 {
 	StateGameObject* apple = new StateGameObject();
 
@@ -755,6 +984,28 @@ bool TutorialGame::SelectObject() {
 
 	else if(selectionObject){
 		//renderer->DrawString("Press L to lock selected object object!", Vector2(5, 80));
+
+		string name = "Name = ";
+		name.append(selectionObject->GetName());
+
+		string pos = "Position = ";
+		pos.append(std::to_string(selectionObject->GetTransform().GetPosition().x));
+		pos.append(", ");
+		pos.append(std::to_string(selectionObject->GetTransform().GetPosition().y));
+		pos.append(", ");
+		pos.append(std::to_string(selectionObject->GetTransform().GetPosition().z));
+
+		string vel = "Velocity = ";
+		vel.append(std::to_string(selectionObject->GetPhysicsObject()->GetLinearVelocity().x));
+		vel.append(", ");
+		vel.append(std::to_string(selectionObject->GetPhysicsObject()->GetLinearVelocity().y));
+		vel.append(", ");
+		vel.append(std::to_string(selectionObject->GetPhysicsObject()->GetLinearVelocity().z));
+
+		renderer->DrawString("Debug", Vector2(5, 75));
+		renderer->DrawString(name, Vector2(5, 80));
+		renderer->DrawString(pos, Vector2(5, 85));
+		renderer->DrawString(vel, Vector2(5, 90));
 	}
 
 	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) {

@@ -2,7 +2,9 @@
 #include "GameTechRenderer.h"
 #include "../CSC8503Common/PhysicsSystem.h"
 #include "StateGameObject.h"
-#include "StateGameObject.h"
+#include "ThrusterObject.h"
+#include "PositionObstacle.h"
+#include "RotationObstacle.h"
 
 namespace NCL {
 	namespace CSC8503 {
@@ -38,7 +40,10 @@ namespace NCL {
 			void InitMenu();
 			void InitResultScreen(bool win);
 
-			void InitLevel1();
+			void ChooseStage();
+			void InitLevel1A();
+			void InitLevel1B();
+			void InitLevel1C();
 			void InitLevel2();
 
 			void InitGameExamples();
@@ -58,6 +63,12 @@ namespace NCL {
 			GameObject* AddPlaneToWorld(const Vector3& position, const int axis);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f, string name = "");
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.0f, string name = "");
+			ThrusterObject* AddThrusterToWorld(const Vector3& position, Vector3 dimensions);
+			ThrusterObject* thruster;
+			PositionObstacle* AddPositionObstacleToWorld(float radius);
+			PositionObstacle* posObs;
+			RotationObstacle* AddRotationObstacleToWorld();
+			RotationObstacle* rotObs;
 			
 			GameObject* AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass = 10.0f, string name = "");
 

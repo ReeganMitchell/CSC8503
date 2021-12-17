@@ -205,6 +205,7 @@ void PhysicsSystem::BasicCollisionDetection() {
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) {
 				std::cout << "Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << std::endl;
+
 				ImpulseResolveCollision(*info.a, *info.b, info.point);
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);
@@ -261,8 +262,8 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 
 	Vector3 fullImpulse = p.normal * j;
 
-	physA->ApplyLinearImpulse(-fullImpulse);
-	physB->ApplyLinearImpulse(fullImpulse);
+	physA->ApplyLinearImpulse(-fullImpulse * physA->GetElasticity());
+	physB->ApplyLinearImpulse(fullImpulse * physB->GetElasticity());
 
 	physA->ApplyAngularImpulse(Vector3::Cross(relativeA, -fullImpulse));
 	physB->ApplyAngularImpulse(Vector3::Cross(relativeB, fullImpulse));
@@ -275,6 +276,9 @@ void PhysicsSystem::CheckForImportantCollisions(GameObject& a, GameObject& b)
 	}
 	else if ((a.GetName() == "Player" && b.GetName() == "End") || (a.GetName() == "End" && b.GetName() == "Player")) {
 		result = 2;
+	}
+	else if ((a.GetName() == "Player" && b.GetName() == "Bonus") || (a.GetName() == "Bonus" && b.GetName() == "Player")) {
+		result = 3;
 	}
 }
 
