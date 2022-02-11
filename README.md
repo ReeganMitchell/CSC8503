@@ -16,6 +16,6 @@ and the relevant header files.
 Other files that have methods edited or created by me are located in CSC8503/CSC8503Common.
 Examples include:
 
--PhysicsSystem.cpp
--PhysicsObject.cpp
--CollisionDetection.cpp
+- PhysicsSystem.cpp
+- PhysicsObject.cpp
+- CollisionDetection.cpp
