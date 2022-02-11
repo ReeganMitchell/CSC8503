@@ -280,6 +280,9 @@ void PhysicsSystem::CheckForImportantCollisions(GameObject& a, GameObject& b)
 	else if ((a.GetName() == "Player" && b.GetName() == "Bonus") || (a.GetName() == "Bonus" && b.GetName() == "Player")) {
 		result = 3;
 	}
+	else if ((a.GetName() == "Player" && b.GetName() == "Enemy") || (a.GetName() == "Enemy" && b.GetName() == "Player")) {
+		result = 1;
+	}
 }
 
 /*

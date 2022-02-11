@@ -5,6 +5,7 @@
 #include "ThrusterObject.h"
 #include "PositionObstacle.h"
 #include "RotationObstacle.h"
+#include "Enemy.h"
 
 namespace NCL {
 	namespace CSC8503 {
@@ -69,6 +70,7 @@ namespace NCL {
 			PositionObstacle* posObs;
 			RotationObstacle* AddRotationObstacleToWorld();
 			RotationObstacle* rotObs;
+			Enemy* enemy1;
 			
 			GameObject* AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass = 10.0f, string name = "");
 

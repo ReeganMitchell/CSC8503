@@ -6,6 +6,7 @@
 #include "../../Common/TextureLoader.h"
 #include "../CSC8503Common/PositionConstraint.h"
 #include <sstream>
+#include "Enemy.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -55,7 +56,7 @@ void TutorialGame::InitialiseAssets() {
 	lose = 0;
 
 	InitCameraMenu();
-	//InitWorld();
+	InitWorld();
 	InitMenu();
 }
 
@@ -167,6 +168,9 @@ void TutorialGame::UpdateGame(float dt) {
 	}
 	if (rotObs) {
 		rotObs->Update(dt);
+	}
+	if (enemy1) {
+		enemy1->Update(dt);
 	}
 
 	world->UpdateWorld(dt);
@@ -362,23 +366,24 @@ void TutorialGame::InitCamera1() {
 void TutorialGame::InitCamera2() {
 	world->GetMainCamera()->SetNearPlane(0.1f);
 	world->GetMainCamera()->SetFarPlane(500.0f);
-	world->GetMainCamera()->SetPitch(-15.0f);
-	world->GetMainCamera()->SetYaw(20.0f);
-	world->GetMainCamera()->SetPosition(Vector3(60, 100, 100));
+	world->GetMainCamera()->SetPitch(-90.0f);
+	world->GetMainCamera()->SetYaw(0.0f);
+	world->GetMainCamera()->SetPosition(Vector3(12, 40, 12));
 	lockedObject = nullptr;
 }
 
 void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
-	InitCamera1();
+	//InitCamera1();
 	selectionObject = nullptr;
 
 	//InitMixedGridWorld(2, 1, 3.5f, 3.5f);
 
-	AddCubeToWorld(Vector3(0, 2, 0), Vector3(1, 1, 1), 10.0f, "Menu");
-	AddPlayerToWorld(Vector3(3.5, 2, 0));
-	AddPlaneToWorld(Vector3(0, 0, 0), 1);
+	AddCubeToWorld(Vector3(0, 0, 0), Vector3(1, 1, 1), 0.0f, "Menu");
+	AddCubeToWorld(Vector3(1, 0, 0), Vector3(1, 1, 1), 0.0f, "Menu");
+	AddCubeToWorld(Vector3(2, 0, 0), Vector3(1, 1, 1), 0.0f, "Menu");
+	AddCubeToWorld(Vector3(3, 0, 0), Vector3(1, 1, 1), 0.0f, "Menu");
 
 	//InitGameExamples();
 	//BridgeConstraintTest();
@@ -391,6 +396,8 @@ void TutorialGame::InitMenu() {
 	physics->Clear();
 	InitCameraMenu();
 	selectionObject = nullptr;
+	useGravity = false;
+	physics->UseGravity(useGravity);
 
 	score = 0;
 	stage = 0;
@@ -411,6 +418,8 @@ void TutorialGame::InitResultScreen(bool didWin)
 	physics->Clear();
 	InitCameraMenu();
 	selectionObject = nullptr;
+	useGravity = false;
+	physics->UseGravity(useGravity);
 
 	menu = false;
 	win = didWin;
@@ -425,6 +434,8 @@ void TutorialGame::InitResultScreen(bool didWin)
 
 void TutorialGame::ChooseStage()
 {
+	useGravity = true;
+	physics->UseGravity(useGravity);
 	if (stage == 0) {
 		InitLevel1A();
 	}
@@ -441,6 +452,7 @@ void TutorialGame::InitLevel1A()
 	world->ClearAndErase();
 	physics->Clear();
 	InitCamera1();
+	useGravity = true;
 
 	AddCubeToWorld(Vector3(0, 40, 0), Vector3(4, 1, 2), 0, "End");
 	thruster = AddThrusterToWorld(Vector3(0, 0, 0), Vector3(4, 1, 2));
@@ -455,6 +467,7 @@ void TutorialGame::InitLevel1B()
 	world->ClearAndErase();
 	physics->Clear();
 	InitCamera1();
+	useGravity = true;
 
 	AddCubeToWorld(Vector3(0, 40, 0), Vector3(4, 1, 2), 0, "End");
 	thruster = AddThrusterToWorld(Vector3(0, 0, 0), Vector3(4, 1, 2));
@@ -470,6 +483,7 @@ void TutorialGame::InitLevel1C()
 	world->ClearAndErase();
 	physics->Clear();
 	InitCamera1();
+	useGravity = true;
 
 	AddCubeToWorld(Vector3(0, 40, 0), Vector3(4, 1, 2), 0, "End");
 	thruster = AddThrusterToWorld(Vector3(0, 0, 0), Vector3(4, 1, 2));
@@ -487,7 +501,88 @@ void TutorialGame::InitLevel2()
 	physics->Clear();
 	InitCamera2();
 
-	InitDefaultFloor();
+	useGravity = true;
+	physics->UseGravity(useGravity);
+
+	AddSphereToWorld(Vector3(14, 0, 22),0.5,10.0f,"Player");
+	AddEnemyToWorld(Vector3(18, 0, 2));
+
+	//Init Maze
+
+	AddFloorToWorld(Vector3(12, -2, 12));
+
+	for (int i = 0; i < 13; i++) {
+		AddCubeToWorld(Vector3(i, 0, 0) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	}
+	for (int i = 1; i < 13; i++) {
+		AddCubeToWorld(Vector3(0, 0, i) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	}
+	for (int i = 1; i < 13; i++) {
+		AddCubeToWorld(Vector3(12, 0, i) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	}
+	for (int i = 1; i < 12; i++) {
+		AddCubeToWorld(Vector3(i, 0, 12) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	}
+	AddCubeToWorld(Vector3(8, 0, 1) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(1, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(2, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(4, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(5, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(6, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(9, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(10, 0, 2) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(4, 0, 3) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 3) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(2, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(3, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(4, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(5, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(6, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(10, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(11, 0, 4) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(2, 0, 5) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 5) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(2, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(3, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(4, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(5, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(6, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(10, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(9, 0, 6) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(2, 0, 7) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(6, 0, 7) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(10, 0, 7) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(2, 0, 8) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(4, 0, 8) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(6, 0, 8) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(7, 0, 8) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 8) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(10, 0, 8) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(2, 0, 9) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(4, 0, 9) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 9) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(10, 0, 9) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(2, 0, 10) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(4, 0, 10) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(5, 0, 10) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(6, 0, 10) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 10) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(10, 0, 10) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+
+	AddCubeToWorld(Vector3(6, 0, 11) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
+	AddCubeToWorld(Vector3(8, 0, 11) * 2, Vector3(1, 1, 1) * 0.99f, 0.0f, "Wall");
 
 	selectionObject = nullptr;
 }
@@ -525,7 +620,7 @@ A single function to add a large immoveable cube to the bottom of our world
 GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	GameObject* floor = new GameObject("Floor");
 
-	Vector3 floorSize	= Vector3(100, 2, 100);
+	Vector3 floorSize	= Vector3(12, 1, 12);
 	AABBVolume* volume	= new AABBVolume(floorSize);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
 	floor->GetTransform()
@@ -865,27 +960,29 @@ GameObject* TutorialGame::AddPlayerToWorld(const Vector3& position) {
 //}
 
 GameObject* TutorialGame::AddEnemyToWorld(const Vector3& position) {
-	float meshSize		= 3.0f;
-	float inverseMass	= 0.5f;
+	Enemy* enemy = new Enemy();
 
-	GameObject* character = new GameObject();
+	float radius = 0.5;
+	Vector3 sphereSize = Vector3(radius, radius, radius);
+	SphereVolume* volumeS = new SphereVolume(radius);
+	enemy->SetBoundingVolume((CollisionVolume*)volumeS);
 
-	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
-	character->SetBoundingVolume((CollisionVolume*)volume);
-
-	character->GetTransform()
-		.SetScale(Vector3(meshSize, meshSize, meshSize))
+	enemy->GetTransform()
+		.SetScale(sphereSize)
 		.SetPosition(position);
 
-	character->SetRenderObject(new RenderObject(&character->GetTransform(), enemyMesh, nullptr, basicShader));
-	character->SetPhysicsObject(new PhysicsObject(&character->GetTransform(), character->GetBoundingVolume()));
+	enemy->SetRenderObject(new RenderObject(&enemy->GetTransform(), sphereMesh, basicTex, basicShader));
+	enemy->SetPhysicsObject(new PhysicsObject(&enemy->GetTransform(), enemy->GetBoundingVolume()));
 
-	character->GetPhysicsObject()->SetInverseMass(inverseMass);
-	character->GetPhysicsObject()->InitSphereInertia();
+	enemy->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
 
-	world->AddGameObject(character);
+	enemy->GetPhysicsObject()->SetInverseMass(10.0f);
+	enemy->GetPhysicsObject()->InitSphereInertia();
 
-	return character;
+	world->AddGameObject(enemy);
+	enemy1 = enemy;
+
+	return enemy;
 }
 
 GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {

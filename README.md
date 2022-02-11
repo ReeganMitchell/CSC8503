@@ -1,18 +1,21 @@
 # CSC8503
 
-## Coursework Tick List
+## Advanced Game Technologies
 
-### Part 1
+Much of the base code in this project was supplied by the university.
 
-- Ball can get to end of stage
-- Show Final Score and time Taken
-- Different Obstacles
-- Different Surfaces
-- Display Debug information
-- Menu - DONE
+Most of the files located in CSC8503/GameTech were created by me. Examples include:
 
-### Part 2
+- Enemy.cpp
+- ThrusterObject.cpp
+- Position/RotationObstacle.cpp
+- StateGameObject.cpp
 
-- Create maze
-- Enemy Pathfinding + AI
-- Powerups
+and the relevant header files.
+
+Other files that have methods edited or created by me are located in CSC8503/CSC8503Common.
+Examples include:
+
+-PhysicsSystem.cpp
+-PhysicsObject.cpp
+-CollisionDetection.cpp

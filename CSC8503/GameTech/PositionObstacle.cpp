@@ -5,6 +5,7 @@
 
 NCL::CSC8503::PositionObstacle::PositionObstacle()
 {
+	name = "Position Obstacle";
 	counter = 0.0f;
 	stateMachine = new StateMachine();
 

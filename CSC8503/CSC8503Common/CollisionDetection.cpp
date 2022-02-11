@@ -509,7 +509,15 @@ bool CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const T
 
 	bool collided = AABBSphereIntersection((AABBVolume&)*volume,tempCube,volumeB,tempSpherePos,collisionInfo);
 
+
 	if (collided) {
+		Vector3 delta = worldTransformB.GetPosition() - worldTransformA.GetPosition();
+		Vector3 boxSize = volumeA.GetHalfDimensions();
+		Vector3 closestPointOnBox = Maths::Clamp(delta, -boxSize, boxSize);
+		Vector3 localPoint = delta - closestPointOnBox;
+		Vector3 collisionNormal = delta.Normalised();
+
+  		collisionInfo.point.normal = collisionNormal;
 		return true;
 	}
 	return false;

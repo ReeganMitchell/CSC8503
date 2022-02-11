@@ -5,6 +5,7 @@
 
 NCL::CSC8503::RotationObstacle::RotationObstacle()
 {
+	name = "Rotation Obstacle";
 	counter = 0.0f;
 	stateMachine = new StateMachine();
 
